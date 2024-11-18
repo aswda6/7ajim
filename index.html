@@ -3,95 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Images and Videos</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        .upload-container {
-            margin: 20px;
-        }
-        input[type="file"] {
-            margin: 10px 0;
-        }
-        .preview-container {
-            margin-top: 20px;
-        }
-        .preview-container img, .preview-container video {
-            max-width: 100%;
-            max-height: 400px;
-        }
-    </style>
+    <title>Imgur Upload (Image and Video)</title>
 </head>
 <body>
-    <h1>Upload Your Image or Video</h1>
-    <div class="upload-container">
-        <input type="file" id="fileInput" accept="image/*, video/*" onchange="previewFile()">
-        <button onclick="uploadFile()">Upload to Imgur</button>
-    </div>
 
-    <div class="preview-container">
-        <h2>Preview:</h2>
-        <img id="imgPreview" style="display:none;" />
-        <video id="videoPreview" style="display:none;" controls></video>
+    <h1>Upload Image or Video to Imgur</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" accept="image/*,video/*" />
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="uploadedMedia">
+        <h2>Uploaded Media:</h2>
+        <img id="imageDisplay" src="" alt="Uploaded Image" style="max-width: 100%; display: none;"/>
+        <video id="videoDisplay" controls style="max-width: 100%; display: none;">
+            <source id="videoSource" src="" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
     </div>
 
     <script>
-        // Preview the selected file (image or video)
-        function previewFile() {
-            const file = document.getElementById('fileInput').files[0];
-            const reader = new FileReader();
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const imageDisplay = document.getElementById('imageDisplay');
+        const videoDisplay = document.getElementById('videoDisplay');
+        const videoSource = document.getElementById('videoSource');
 
-            reader.onloadend = function () {
-                if (file.type.startsWith('image')) {
-                    document.getElementById('imgPreview').style.display = 'block';
-                    document.getElementById('videoPreview').style.display = 'none';
-                    document.getElementById('imgPreview').src = reader.result;
-                } else if (file.type.startsWith('video')) {
-                    document.getElementById('videoPreview').style.display = 'block';
-                    document.getElementById('imgPreview').style.display = 'none';
-                    document.getElementById('videoPreview').src = reader.result;
-                }
-            };
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
 
-            if (file) {
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Upload the file to Imgur
-        function uploadFile() {
-            const file = document.getElementById('fileInput').files[0];
+            const file = fileInput.files[0];
             if (!file) {
-                alert("Please select a file first!");
+                alert("Please select a file.");
                 return;
             }
 
             const formData = new FormData();
             formData.append('image', file);
 
-            // Imgur API upload
-            fetch('https://api.imgur.com/3/image', {
+            fetch('https://api.imgur.com/3/upload', {
                 method: 'POST',
                 headers: {
-                    'Authorization': 'Client-ID 46da857d3952bd6'  // Your Imgur Client-ID
+                    'Authorization': 'Client-ID 46da857d3952bd6', // Replace with your Imgur Client ID
                 },
-                body: formData
+                body: formData,
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("File uploaded successfully!");
-                    console.log("Imgur URL: " + data.data.link);
+                    // Determine if it's an image or video and display accordingly
+                    const link = data.data.link;
+                    if (file.type.startsWith('image')) {
+                        imageDisplay.src = link;
+                        imageDisplay.style.display = 'block';
+                        videoDisplay.style.display = 'none';
+                    } else if (file.type.startsWith('video')) {
+                        videoSource.src = link;
+                        videoDisplay.style.display = 'block';
+                        imageDisplay.style.display = 'none';
+                    }
+                    alert('Upload successful!');
                 } else {
-                    alert("Error uploading file");
+                    alert('Upload failed.');
                 }
             })
             .catch(error => {
-                console.error("Error uploading file:", error);
+                console.error('Error:', error);
             });
-        }
+        });
     </script>
+
 </body>
 </html>
