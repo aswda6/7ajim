@@ -3,71 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Upload</title>
+    <title>Public Media Sharing</title>
     <style>
-        .video-box {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
         }
-        .video-box video {
-            width: 320px;
-            height: 240px;
-            border: 2px solid #ccc;
+        input[type="file"] {
+            margin: 10px;
+            padding: 10px;
+        }
+        .media-container {
+            margin-top: 20px;
+        }
+        .media-item {
+            margin-bottom: 20px;
+        }
+        video, img {
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
 <body>
+    <h1>Share Your Media</h1>
+    <p>Upload an image or video to share it publicly:</p>
 
-    <h2>Upload and View Video</h2>
+    <!-- File Upload Form -->
+    <input type="file" id="mediaInput" accept="image/*, video/*" onchange="displayMedia()" />
 
-    <!-- Video Upload Form -->
-    <input type="file" id="videoInput" accept="video/*">
-    <button onclick="uploadVideo()">Upload Video</button>
-
-    <h3>Uploaded Videos:</h3>
-    <div id="videoBox" class="video-box">
-        <!-- Uploaded videos will appear here -->
+    <div class="media-container" id="mediaContainer">
+        <!-- Uploaded media will appear here -->
     </div>
 
     <script>
-        function uploadVideo() {
-            // Get the file input element
-            const fileInput = document.getElementById("videoInput");
-            const videoBox = document.getElementById("videoBox");
+        function displayMedia() {
+            const mediaInput = document.getElementById('mediaInput');
+            const mediaContainer = document.getElementById('mediaContainer');
+            const file = mediaInput.files[0];
+            
+            if (file) {
+                const mediaUrl = URL.createObjectURL(file);
+                let mediaElement;
 
-            // Get the file from the input
-            const videoFile = fileInput.files[0];
+                // Check if it's an image or video
+                if (file.type.startsWith('image/')) {
+                    mediaElement = document.createElement('img');
+                    mediaElement.src = mediaUrl;
+                    mediaElement.alt = 'Uploaded Image';
+                } else if (file.type.startsWith('video/')) {
+                    mediaElement = document.createElement('video');
+                    mediaElement.controls = true;
+                    mediaElement.src = mediaUrl;
+                }
 
-            // Check if a file is selected
-            if (videoFile) {
-                // Create a video element
-                const videoElement = document.createElement("video");
-                videoElement.setAttribute("width", "320");
-                videoElement.setAttribute("height", "240");
-                videoElement.setAttribute("controls", "true");
-
-                // Create a URL for the video file
-                const videoURL = URL.createObjectURL(videoFile);
-
-                // Set the source of the video
-                const sourceElement = document.createElement("source");
-                sourceElement.setAttribute("src", videoURL);
-                sourceElement.setAttribute("type", "video/mp4");
-
-                // Append the source to the video element
-                videoElement.appendChild(sourceElement);
-
-                // Add the video element to the video box
-                videoBox.appendChild(videoElement);
-
-                // Clear the file input
-                fileInput.value = '';
-            } else {
-                alert("Please select a video file to upload.");
+                // Add the uploaded media to the page
+                const mediaDiv = document.createElement('div');
+                mediaDiv.classList.add('media-item');
+                mediaDiv.appendChild(mediaElement);
+                mediaContainer.appendChild(mediaDiv);
             }
         }
     </script>
-
 </body>
 </html>
